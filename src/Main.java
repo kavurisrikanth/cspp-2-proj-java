@@ -1,21 +1,41 @@
 import javax.print.Doc;
 import java.io.File;
 import java.util.ArrayList;
+import java.lang.Exception;
 
 //import java.Document;
 public class Main {
     public static void main(String[] args) {
-        ArrayList<Document> docs = new ArrayList<Document>();
-        String curDir = "I:\\MSIT\\IT\\projects\\testing";
 
-        for(File file: new File(curDir).listFiles()) {
-            if(file.isFile() && file.getName().contains(".txt")) {
-                docs.add(new Document(file.getPath()));
+        // if(args.length)
+        // System.out.println("args: " + args + ", len: " + args.length);
+
+        if(args.length == 1) {
+          ArrayList<Document> docs = new ArrayList<Document>();
+          // String curDir = "I:\\MSIT\\IT\\projects\\testing";
+          String curDir = args[0];
+
+          try {
+            for(File file: new File(curDir).listFiles()) {
+                if(file.isFile() && file.getName().contains(".txt")) {
+                    docs.add(new Document(file.getPath()));
+                }
             }
-        }
 
-        bagOfWords(docs);
-        LCS(docs);
+            // for(Document d: docs) {
+            //   System.out.println(d);
+            // }
+
+            bagOfWords(docs);
+            LCS(docs);
+          } catch (Exception e) {
+            System.out.println("Could not open directory: " + curDir);
+            // System.out.println(e.getMessage());
+          }
+        } else {
+          System.out.println("Wrong number of args!");
+          System.out.println("Usage: java Main <directory>");
+        }
     }
 
     private static void bagOfWords(ArrayList<Document> docs) {
@@ -118,7 +138,7 @@ public class Main {
                         i++;
                     }
 //                    System.out.println("ans: " + ans + ", first: " + d_one.getMyContents() + ", second: " + d_two.getMyContents());
-                    freqs[d_one.getMyID()][d_two.getMyID()] = (ans * 2)/(d_one.getMyContents().length() + d_two.getMyContents().length());
+                    freqs[d_one.getMyID()][d_two.getMyID()] = (ans * 2)/(d_one.getmyWordLength() + d_one.getmyNumSpaces() + d_two.getmyWordLength() + d_two.getmyNumSpaces());
                 }
 
                 ans = 0;
