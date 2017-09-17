@@ -28,6 +28,7 @@ public class Main {
 
             bagOfWords(docs);
             LCS(docs);
+            fingerprinting(docs);
           } catch (Exception e) {
             System.out.println("Could not open directory: " + curDir);
             // System.out.println(e.getMessage());
@@ -57,6 +58,23 @@ public class Main {
         printMatrix(freqs, docs.size());
     }
 
+    private static void fingerprinting(ArrayList<Document> docs) {
+      Double freqs[][] = new Double[docs.size()][docs.size()];
+
+      for(Document d_one: docs) {
+          System.out.println(d_one.getMyID() + " -> " + d_one.getMyPath());
+          for(Document d_two: docs) {
+              if(d_one.getMyID().equals(d_two.getMyID()))
+                  freqs[d_one.getMyID()][d_two.getMyID()] = -1.0;
+              else
+                  freqs[d_one.getMyID()][d_two.getMyID()] = (double)(2 * d_one.compareFingerprints(d_two))/(d_one.getMyKMapLength() + d_two.getMyKMapLength());
+          }
+      }
+
+      System.out.print("\nFingerprinting: ");
+      printMatrix(freqs, docs.size());
+    }
+
     private static void LCS(ArrayList<Document> docs) {
         Double freqs[][] = new Double[docs.size()][docs.size()];
         String[] one, two;
@@ -73,24 +91,12 @@ public class Main {
                     freqs[d_one.getMyID()][d_two.getMyID()] = -1.0;
                 // Compare the words in each file
                 else {
-
-                    /*
-                    for(i = 0; i < one.length; i++)
-                        System.out.print(one[i] + " ");
-                    System.out.println("");
-
-                    for(i = 0; i < two.length; i++)
-                        System.out.print(two[i] + " ");
-                    System.out.println("");
-                    */
-//                    System.out.println("one: " + one.toString() + ", two: " + two.toString());
                     i = 0;
                     while (i < one.length) {
                         j = 0;
                         while (j < two.length) {
                             // if there is a match
                             if (one[i].compareTo(two[j]) == 0) {
-//                                System.out.println("matched " + one[i] + " and " + two[j]);
                                 matches = 1;
                                 total_len += two[j].length();
                                 iter_one = i + 1;
@@ -99,7 +105,6 @@ public class Main {
                                 while (iter_one < one.length &&
                                         iter_two < two.length &&
                                         one[iter_one].compareTo(two[iter_two]) == 0) {
-//                                    System.out.println("matched " + one[iter_one] + " and " + two[iter_two]);
                                     matches++;
                                     total_len += two[iter_two].length();
                                     iter_one++;
@@ -137,7 +142,6 @@ public class Main {
                         total_len = 0;
                         i++;
                     }
-//                    System.out.println("ans: " + ans + ", first: " + d_one.getMyContents() + ", second: " + d_two.getMyContents());
                     freqs[d_one.getMyID()][d_two.getMyID()] = (ans * 2)/(d_one.getmyWordLength() + d_one.getmyNumSpaces() + d_two.getmyWordLength() + d_two.getmyNumSpaces());
                 }
 

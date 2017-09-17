@@ -9,6 +9,7 @@ Knowing responsibilities:
 import java.io.File;
 import java.util.*;
 import java.nio.*;
+import java.lang.Math;
 
 public class Document {
     // class variables
@@ -19,9 +20,9 @@ public class Document {
     private Double myVectorLength;
     private Double myWordLength;
     private Double myNumSpaces;
-//    private Double dotProduct;
     private static int docID = 0;
     private Integer myID;
+    private ArrayList<Integer> myKMap, myFingerprint;
 
     public Document(String path) {
         this.myPath = "";
@@ -31,9 +32,12 @@ public class Document {
         this.myVectorLength = 0.0;
         this.myWordLength = 0.0;
         this.myID = docID++;
+        this.myKMap = new ArrayList<Integer>();
+        this.myFingerprint = new ArrayList<Integer>();
 
         this.lineify();
         this.vectorify();
+        this.constructFingerprint();
     }
 
     public HashMap<String, Integer> getMyVector() {
@@ -52,13 +56,9 @@ public class Document {
         return this.myWords;
     }
 
-//    public Double getDotProduct() {
-//        return this.dotProduct;
-//    }
-//
-//    public void setDotProduct(double dotProduct) {
-//        this.dotProduct = new Double(dotProduct);
-//    }
+    public ArrayList<Integer> getMyFingerprint() {
+      return this.myFingerprint;
+    }
 
     public Double getmyVectorLength() {
         return this.myVectorLength;
@@ -74,6 +74,10 @@ public class Document {
 
     public Integer getMyID() {
         return myID;
+    }
+
+    public Integer getMyKMapLength() {
+      return this.myKMap.size();
     }
 
     public void vectorify() {
@@ -120,6 +124,70 @@ public class Document {
             }
         }
         return (double)ans/(this.getmyVectorLength() * other.getmyVectorLength());
+    }
+
+    public void constructFingerprint() {
+      /*
+        To construct the fingerprint, we do the following:
+        1. Smoosh the string, meaning remove spaces
+        2. Make k-gram strings
+        3. Run the k-gram strings through a hash
+        4. Pick all k-gram hashes at position 0 mod p
+      */
+
+      String smoosh = this.myContents.replaceAll("\\s", "");
+      String gram  = "";
+      int k = 5, p = k + 1;
+
+      for(int i = 0; i < smoosh.length() - k; i++) {
+        gram = smoosh.substring(i, i + k);
+        myKMap.add(applyHash(gram));
+      }
+
+      for(int i = 0; i < myKMap.size(); i++) {
+        if(i % p == 0)
+          myFingerprint.add(myKMap.get(i));
+      }
+    }
+
+    private Integer applyHash(String word) {
+      /*
+        Applies a hash to word.
+        The hash is the following:
+        hash = ascii(word[n - 1]) * (10 ^ (0)) +
+               ascii(word[n - 2]) * (10 ^ (1)) +
+               .
+               .
+               .
+               ascii(word[0]) * (10 ^ (n - 1))
+
+               where n = strlen(word)
+      */
+
+      int ans = 0, power = 0, len = word.length();
+      char c;
+
+      for(int i = 0; i < len; i++) {
+        c = word.charAt(i);
+        power = (int)Math.pow(10, len - 1 - i);
+        ans += (int)c * power;
+      }
+
+      return ans;
+    }
+
+    public Integer compareFingerprints(Document other) {
+      /*
+        Compares the fingerprints of two Document objects and returns
+        the number of matched fingerprints.
+      */
+      int ans = 0;
+      ArrayList<Integer> fp_other = other.getMyFingerprint();
+      for(Integer fp: this.myFingerprint) {
+        if(fp_other.contains(fp))
+          ans++;
+      }
+      return ans;
     }
 
     public String toString() {
